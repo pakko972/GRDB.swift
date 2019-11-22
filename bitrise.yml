@@ -1,0 +1,169 @@
+---
+format_version: '8'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: other
+trigger_map:
+- push_branch: "*"
+  workflow: primary
+- pull_request_source_branch: "*"
+  workflow: primary
+workflows:
+  primary:
+    after_run:
+    - _setup
+    - _tests
+  _setup:
+    steps:
+    - activate-ssh-key@4.0.3:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@4.0.17:
+        inputs:
+        - update_submodules: 'no'
+    - script@1.1.5:
+        title: Install
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            bundle install
+            bundle exec pod repo update
+  _tests:
+    steps:
+    - script@1.1.5:
+        title: Test GRDB Xcode 11
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            TID="GRDBOSX (Swift 5.1, macOS)" make test_framework_GRDBOSX_maxSwift
+            TID="GRDBOSX (Swift 4.2, macOS)" make test_framework_GRDBOSX_minSwift
+            TID="GRDBWatchOS (watchOS)" make test_framework_GRDBWatchOS
+            TID="GRDBiOS (Swift 5.1, iOS <MAX>)" make test_framework_GRDBiOS_maxTarget_maxSwift
+            TID="GRDBiOS (Swift 4.2, iOS <MAX>)" make test_framework_GRDBiOS_maxTarget_minSwift
+            #TID="GRDBiOS (Swift 5.1, iOS <MIN>)" make test_framework_GRDBiOS_minTarget
+            TID="GRDBtvOS (Swift 5.1, tvOS <MAX>)" make test_framework_GRDBtvOS_maxTarget_maxSwift
+            TID="GRDBtvOS (Swift 4.2, tvOS <MAX>)" make test_framework_GRDBtvOS_maxTarget_minSwift
+            # TID="GRDBtvOS (Swift 5.1, tvOS <MIN>)" make test_framework_GRDBtvOS_minTarget
+            TID="GRDB [SPM] (macOS)" make test_SPM
+    - script@1.1.5:
+        title: Test GRDBCustom Xcode 11
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            TID="GRDBOSX (Swift 5.1, macOS)" make test_framework_GRDBCustomSQLiteOSX
+            TID="GRDBiOS (Swift 5.1, iOS <MAX>)" make test_framework_GRDBCustomSQLiteiOS_maxTarget_maxSwift
+            TID="GRDBiOS (Swift 4.2, iOS <MAX>)" make test_framework_GRDBCustomSQLiteiOS_maxTarget_minSwift
+            # TID="GRDBiOS (Swift 5.1, iOS <MIN>)" make test_framework_GRDBCustomSQLiteiOS_minTarget
+    - script@1.1.5:
+        title: Test SQLCipher Xcode 11
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            TID="SQLCipher 3" make test_framework_SQLCipher3
+            TID="SQLCipher 4" make test_framework_SQLCipher4
+    - script@1.1.5:
+        title: Test Installation Xcode 11
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+
+            # Manual Install
+            TID=Manual Install" make test_install_manual
+
+            #  CocoaPods Lint
+            TID="CocoaPods Lint" make test_CocoaPodsLint_GRDB
+
+            #  CocoaPods Install GRDB
+            TID="CocoaPods GRDB (framework)" make test_install_GRDB_CocoaPods_framework
+
+            #  CocoaPods Install GRDB
+            TID="CocoaPods GRDB (static)" make test_install_GRDB_CocoaPods_static
+
+            #  SPM Install
+            TID="SPM Package" make test_install_SPM_Package
+
+            #  SPM Install
+            TID="SPM Package in Xcode Project" make test_install_SPM_Project
+
+            # Custom SQLite Install
+            TID="Custom SQLite" make test_install_customSQLite
+    - script@1.1.5:
+        title: Test GRDB Xcode 10.3
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            TID="GRDBOSX (Swift 5, macOS)" make test_framework_GRDBOSX_maxSwift
+            TID="GRDBWatchOS (watchOS)" make test_framework_GRDBWatchOS
+            TID="GRDBiOS (Swift 5, iOS <MAX>)" make test_framework_GRDBiOS_maxTarget_maxSwift
+            TID="GRDBiOS (Swift 5, iOS <MIN>)" make test_framework_GRDBiOS_minTarget
+            TID="GRDBtvOS (Swift 5, tvOS <MAX>)" make test_framework_GRDBtvOS_maxTarget_maxSwift
+            TID="GRDBtvOS (Swift 5, tvOS <MIN>)" make test_framework_GRDBtvOS_minTarget
+            TID="GRDB [SPM] (macOS)" make test_SPM
+    - script@1.1.5:
+        title: Test GRDB Xcode 10.2
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            TID="GRDBOSX (Swift 5, macOS)" make test_framework_GRDBOSX_maxSwift
+            TID="GRDBWatchOS (watchOS)" make test_framework_GRDBWatchOS
+            TID="GRDBiOS (Swift 5, iOS <MAX>)" make test_framework_GRDBiOS_maxTarget_maxSwift
+            TID="GRDBiOS (Swift 5, iOS <MIN>)" make test_framework_GRDBiOS_minTarget
+            TID="GRDBtvOS (Swift 5, tvOS <MAX>)" make test_framework_GRDBtvOS_maxTarget_maxSwift
+            TID="GRDBtvOS (Swift 5, tvOS <MIN>)" make test_framework_GRDBtvOS_minTarget
+            TID="GRDB [SPM] (macOS)" make test_SPM
+    - script@1.1.5:
+        title: Test GRDB Xcode 10.1
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            TID="GRDBOSX (Swift 4.2, macOS)" make test_framework_GRDBOSX_maxSwift
+            TID="GRDBWatchOS (watchOS)" make test_framework_GRDBWatchOS
+            TID="GRDBiOS (Swift 4.2, iOS <MAX>)" make test_framework_GRDBiOS_maxTarget_maxSwift
+            TID="GRDBiOS (Swift 4.2, iOS <MIN>)" make test_framework_GRDBiOS_minTarget
+            TID="GRDBtvOS (Swift 4.2, tvOS <MAX>)" make test_framework_GRDBtvOS_maxTarget_maxSwift
+            TID="GRDBtvOS (Swift 4.2, tvOS <MIN>)" make test_framework_GRDBtvOS_minTarget
+            TID="GRDB [SPM] (macOS)" make test_SPM
+    - script@1.1.5:
+        title: Test GRDB Xcode 10
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            TID="GRDBOSX (Swift 4.2, macOS)" make test_framework_GRDBOSX_maxSwift
+            TID="GRDBWatchOS (watchOS)" make test_framework_GRDBWatchOS
+            TID="GRDBiOS (Swift 4.2, iOS <MAX>)" make test_framework_GRDBiOS_maxTarget_maxSwift
+            TID="GRDBiOS (Swift 4.2, iOS <MIN>)" make test_framework_GRDBiOS_minTarget
+            TID="GRDBtvOS (Swift 4.2, tvOS <MAX>)" make test_framework_GRDBtvOS_maxTarget_maxSwift
+            TID="GRDBtvOS (Swift 4.2, tvOS <MIN>)" make test_framework_GRDBtvOS_minTarget
+            TID="GTID="GRDB [SPM] (macOS)" make test_SPM
+    - script@1.1.5:
+        title: Test Installation Xcode 10
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+
+            # CocoaPods Install GRDB
+            TID="CocoaPods GRDB (framework)" make test_install_GRDB_CocoaPods_framework
+
+            # CocoaPods Install GRDB
+            TID="CocoaPods GRDB (static)" make test_install_GRDB_CocoaPods_static
+
+            # Custom SQLite Install
+            TID="Custom SQLite" make test_install_customSQLite
