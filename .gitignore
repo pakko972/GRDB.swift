@@ -108,6 +108,7 @@ Podfile.lock
 .build
 Package.resolved
 Tests/SPM/Packages
+.swiftpm
 
 # Ruby
 .ruby-version
