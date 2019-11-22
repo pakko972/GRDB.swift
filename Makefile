@@ -113,7 +113,12 @@ ifdef XCPRETTY_PATH
   XCPRETTY = | xcpretty -c
   
   # On Travis-CI, use xcpretty-travis-formatter
-  ifeq ($(TRAVIS),true)
+  ifeq ($(CI),true)
+    XCPRETTY += -f `xcpretty-travis-formatter`
+  endif
+    
+  # On CI, use xcpretty-travis-formatter
+  ifeq ($(CI),true)
     XCPRETTY += -f `xcpretty-travis-formatter`
   endif
 endif
